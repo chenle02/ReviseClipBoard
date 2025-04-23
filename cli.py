@@ -96,6 +96,7 @@ def main():
         sys.exit(1)
 
     pyperclip.copy(reply)
+    print(reply)
     print("Response copied to clipboard.")
 
 if __name__ == '__main__':
