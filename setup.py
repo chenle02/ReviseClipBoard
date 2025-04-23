@@ -17,7 +17,8 @@ setup(
     url='',
     py_modules=['cli'],
     install_requires=[
-        'openai',
+        # Requires OpenAI Python client with new OpenAI() client class (>=0.27.7)
+        'openai>=0.27.7',
         'pyperclip',
     ],
     entry_points={

@@ -16,6 +16,7 @@
 - Python 3.7 or higher
 - pip
 - wheel (`pip install wheel`)
+- Python OpenAI client library version >=0.27.7 (`pip install 'openai>=0.27.7'`)
 - Linux with `xclip` installed: `sudo apt-get install xclip`
 - OpenAI API key
 
@@ -134,4 +135,25 @@ This setup will:
 - Display the response in a notification via `notify-send`.
 
 If you're on Wayland with `wl-clipboard`, replace `xclip -o -selection clipboard` with `wl-paste`.
+
+## Troubleshooting
+
+### AttributeError: module 'openai' has no attribute 'OpenAI'
+
+If you see this error, it means your installed OpenAI Python client is older than v0.27.0 and does not include the new `OpenAI()` client class used by `gpt-clip`.
+To resolve:
+
+```bash
+pip install --upgrade 'openai>=0.27.7'
+```
+
+If you're using pipx, reinstall with the pinned version:
+
+```bash
+pipx uninstall gpt-clip || true
+pipx install --force \
+  --spec . \
+  --pip-args "openai==0.27.7" \
+  gpt-clip
+```
 
