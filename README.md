@@ -33,6 +33,36 @@ For development mode (editable install):
 pip install -e .
 ```
 
+### Installing via pipx
+
+If you'd like to install `gpt-clip` in an isolated environment using pipx, note that the CLI has been tested with OpenAI client `openai==0.27.7`. To pin the compatible OpenAI version and ensure all dependencies (including `pyperclip`) are installed, follow these steps:
+
+1. (Optional) Uninstall any existing `gpt-clip` installation:
+   ```bash
+   pipx uninstall gpt-clip || true
+   ```
+2. Install from your local path, forcing a fresh install and pinning the OpenAI client:
+   ```bash
+   pipx install --force \
+     --spec . \
+     --pip-args "openai==0.27.7" \
+     gpt-clip
+   ```
+3. (Optional) To install in editable mode (so local changes take effect immediately):
+   ```bash
+   pipx install --force \
+     --spec . \
+     --editable \
+     --pip-args "openai==0.27.7" \
+     gpt-clip
+   ```
+4. If you see a warning about missing `pyperclip`, inject it manually:
+   ```bash
+   pipx inject gpt-clip pyperclip
+   ```
+
+This setup creates an isolated virtual environment for `gpt-clip`, installs its dependencies, and pins the OpenAI client to a tested version.
+
 ## Configuration
 
 1. Copy the example configuration to your config directory:
