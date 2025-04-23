@@ -40,11 +40,11 @@ pip install -e .
    mkdir -p ~/.config/gpt-clip
    cp config.json.example ~/.config/gpt-clip/config.json
    ```
-2. Edit `~/.config/gpt-clip/config.json` to set your system prompt and model:
+2. Edit `~/.config/gpt-clip/config.json` to set your system prompt and model. For example, to revise emails professionally:
    ```json
    {
-     "system_prompt": "You are a helpful assistant.",
-     "model": "gpt-3.5-turbo"
+     "system_prompt": "You are a helpful and professional assistant. Your task is to revise the user's email, improving clarity, tone, and grammar. The email may include a reply history; please take that into account to ensure the response is appropriate in tone, content, and context.",
+     "model": "gpt-4.1"
    }
    ```
 
