@@ -138,16 +138,19 @@ If you're on Wayland with `wl-clipboard`, replace `xclip -o -selection clipboard
 
 ## Troubleshooting
 
-### AttributeError: module 'openai' has no attribute 'OpenAI'
+### Compatibility with older OpenAI clients
 
-If you see this error, it means your installed OpenAI Python client is older than v0.27.0 and does not include the new `OpenAI()` client class used by `gpt-clip`.
-To resolve:
+`gpt-clip` auto-detects your OpenAI SDK version:
+- If you have `openai>=0.27.0`, it uses the new `OpenAI()` client class.
+- Otherwise it falls back to the legacy top-level API (`openai.ChatCompletion.create`).
+
+If you encounter unexpected API errors or want to force the new client, upgrade:
 
 ```bash
 pip install --upgrade 'openai>=0.27.7'
 ```
 
-If you're using pipx, reinstall with the pinned version:
+Then, if installed via pipx, reinstall to pick up the updated SDK:
 
 ```bash
 pipx uninstall gpt-clip || true

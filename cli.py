@@ -40,12 +40,20 @@ def main():
     # Load config
     config = load_config()
 
-    # Set API key and create client
+    # Set API key and initialize OpenAI client (new or legacy)
     api_key = os.getenv('OPENAI_API_KEY')
     if not api_key:
         print("Error: OPENAI_API_KEY environment variable not set.", file=sys.stderr)
         sys.exit(1)
-    client = openai.OpenAI(api_key=api_key)
+    # New OpenAI client (v0.27+) uses OpenAI() class
+    # Fallback to legacy top-level API if unavailable
+    if hasattr(openai, 'OpenAI'):
+        client = openai.OpenAI(api_key=api_key)
+        use_legacy = False
+    else:
+        openai.api_key = api_key
+        client = openai
+        use_legacy = True
 
     # Read from clipboard
     clipboard_text = pyperclip.paste()
@@ -61,18 +69,27 @@ def main():
         messages.append({'role': 'system', 'content': system_prompt})
     messages.append({'role': 'user', 'content': clipboard_text})
 
-    # Call OpenAI API (v1)
+    # Call OpenAI API
     try:
-        response = client.chat.completions.create(
-            model=model,
-            messages=messages
-        )
+        if use_legacy:
+            # Legacy ChatCompletion API
+            response = client.ChatCompletion.create(
+                model=model,
+                messages=messages
+            )
+        else:
+            # New client interface
+            response = client.chat.completions.create(
+                model=model,
+                messages=messages
+            )
     except Exception as e:
         print(f"OpenAI API request failed: {e}", file=sys.stderr)
         sys.exit(1)
 
     # Extract and copy response
     try:
+        # Both legacy and new client use same response structure
         reply = response.choices[0].message.content
     except (AttributeError, IndexError) as e:
         print(f"Unexpected API response format: {e}", file=sys.stderr)
