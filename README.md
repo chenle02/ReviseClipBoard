@@ -74,3 +74,34 @@ Le Chen
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+## Tips & Integrations
+
+### Awesome WM Keybinding
+
+If you use Awesome Window Manager, you can bind a key to run `gpt-clip` and show the response via a desktop notification. Add the following to your `~/.config/awesome/rc.lua`, adjusting `modkey` and the key binding as desired:
+
+```lua
+local gears = require("gears")
+local awful = require("awful")
+
+-- Add this inside your globalkeys declaration:
+awful.key({ modkey }, "g",
+    function()
+        awful.spawn.with_shell(
+            "gpt-clip && notify-send 'GPT' \"$(xclip -o -selection clipboard)\""
+        )
+    end,
+    {description = "Chat via clipboard and notify result", group = "launcher"}
+)
+
+-- After defining your key, ensure you set the new keys table:
+root.keys(gears.table.join(globalkeys, /* include the key above */))
+```
+
+This setup will:
+- Send the current clipboard content to `gpt-clip`.
+- Copy the AI response back to the clipboard.
+- Display the response in a notification via `notify-send`.
+
+If you're on Wayland with `wl-clipboard`, replace `xclip -o -selection clipboard` with `wl-paste`.
+
