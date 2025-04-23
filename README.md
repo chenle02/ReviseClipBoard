@@ -35,11 +35,12 @@ pip install -e .
 
 ## Configuration
 
-1. Copy the example configuration:
+1. Copy the example configuration to your config directory:
    ```bash
-   cp config.json.example config.json
+   mkdir -p ~/.config/gpt-clip
+   cp config.json.example ~/.config/gpt-clip/config.json
    ```
-2. Edit `config.json` to set your system prompt and model:
+2. Edit `~/.config/gpt-clip/config.json` to set your system prompt and model:
    ```json
    {
      "system_prompt": "You are a helpful assistant.",

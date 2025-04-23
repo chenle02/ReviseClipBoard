@@ -18,7 +18,12 @@ except ImportError:
     print("Missing dependency: openai. Install with 'pip install openai'", file=sys.stderr)
     sys.exit(1)
 
-CONFIG_PATH = os.path.join(os.path.dirname(__file__), 'config.json')
+## XDG Base Directory for configuration
+CONFIG_DIR = os.environ.get(
+    'XDG_CONFIG_HOME',
+    os.path.expanduser('~/.config')
+)
+CONFIG_PATH = os.path.join(CONFIG_DIR, 'gpt-clip', 'config.json')
 
 def load_config(path=CONFIG_PATH):
     if not os.path.isfile(path):
