@@ -7,6 +7,7 @@ Setup the configuration in a json file, specifying the system prompt and model.
 Prerequisites:
 - Python 3.7+
 - pip
+- wheel (install with `pip install wheel`)
 - Linux with xclip installed (`sudo apt-get install xclip`)
 
 Installation:

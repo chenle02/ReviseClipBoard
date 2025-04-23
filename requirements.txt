@@ -1,2 +1,3 @@
+wheel
 openai
 pyperclip
