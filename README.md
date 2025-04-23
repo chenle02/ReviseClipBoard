@@ -1,32 +1,75 @@
-Purpose:
+# gpt-clip
 
-Use OpenAI API to send the clipboard content to ChatGPT and get a response. The response is then copied to the clipboard.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](#license)
 
-Setup the configuration in a json file, specifying the system prompt and model.
+`gpt-clip` is a lightweight command-line tool that sends your clipboard contents to the OpenAI Chat API and copies the response back to the clipboard.
 
-Prerequisites:
-- Python 3.7+
+## Features
+
+- Single-command chat via clipboard
+- Configurable system prompt & model via JSON
+- Clipboard-agnostic: uses `pyperclip` (supports xclip, pbcopy, etc.)
+- Supports Python 3.7 and above
+
+## Prerequisites
+
+- Python 3.7 or higher
 - pip
-- wheel (install with `pip install wheel`)
-- Linux with xclip installed (`sudo apt-get install xclip`)
+- wheel (`pip install wheel`)
+- Linux with `xclip` installed: `sudo apt-get install xclip`
+- OpenAI API key
 
-Installation:
+## Installation
+
+Clone the repository and install locally:
 ```bash
-pip install -r requirements.txt
+git clone https://github.com/<username>/ReviseClipBoard.git
+cd ReviseClipBoard
+pip install .
 ```
 
-Configuration:
-1. Copy `config.json.example` to `config.json`.
-2. Edit `config.json` to set your desired `system_prompt` and `model`.
-
-Usage:
+For development mode (editable install):
 ```bash
-# Ensure your OpenAI API key is set:
-export OPENAI_API_KEY="your_api_key_here"
-
-# Copy text to clipboard, then run:
-python cli.py
-
-# The response from ChatGPT will be copied back to your clipboard.
+pip install -e .
 ```
+
+## Configuration
+
+1. Copy the example configuration:
+   ```bash
+   cp config.json.example config.json
+   ```
+2. Edit `config.json` to set your system prompt and model:
+   ```json
+   {
+     "system_prompt": "You are a helpful assistant.",
+     "model": "gpt-3.5-turbo"
+   }
+   ```
+
+## Usage
+
+Ensure your OpenAI API key is set:
+```bash
+export OPENAI_API_KEY="<your_api_key>"
+```
+
+Copy text to your clipboard and run:
+```bash
+gpt-clip
+```
+
+The response from ChatGPT will be copied back to your clipboard.
+
+## Contributing
+
+Contributions are welcome! Please open issues or pull requests on GitHub.
+
+## Author
+
+Le Chen
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
