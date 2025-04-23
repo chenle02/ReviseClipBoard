@@ -35,12 +35,12 @@ def main():
     # Load config
     config = load_config()
 
-    # Set API key
+    # Set API key and create client
     api_key = os.getenv('OPENAI_API_KEY')
     if not api_key:
         print("Error: OPENAI_API_KEY environment variable not set.", file=sys.stderr)
         sys.exit(1)
-    openai.api_key = api_key
+    client = openai.OpenAI(api_key=api_key)
 
     # Read from clipboard
     clipboard_text = pyperclip.paste()
@@ -56,9 +56,9 @@ def main():
         messages.append({'role': 'system', 'content': system_prompt})
     messages.append({'role': 'user', 'content': clipboard_text})
 
-    # Call OpenAI API
+    # Call OpenAI API (v1)
     try:
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model=model,
             messages=messages
         )
