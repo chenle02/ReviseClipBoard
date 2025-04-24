@@ -182,3 +182,24 @@ pipx install --force \
   gpt-clip
 ```
 
+## Automated Releases
+
+This project includes a GitHub Actions workflow (.github/workflows/release.yml) that runs on pushing a version tag (e.g. `v0.2.0`). The workflow will:
+
+- Build source and wheel distributions
+- Publish the package to PyPI (using the `PYPI_API_TOKEN` secret)
+- Create a GitHub Release and attach the distribution assets
+
+To enable automated releases:
+
+1. In GitHub, go to **Settings → Secrets and variables → Actions** and add a new secret:
+   - **Name**: `PYPI_API_TOKEN`
+   - **Value**: your PyPI API token (from https://pypi.org/manage/account/#api-tokens)
+2. Tag and push a new version:
+   ```bash
+   git tag v0.2.1
+   git push origin v0.2.1
+   ```
+
+That’s it—on push of the tag, the workflow will publish to PyPI and create a GitHub Release.
+
