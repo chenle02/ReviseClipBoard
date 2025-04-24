@@ -1,6 +1,6 @@
 # gpt-clip
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](#license)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg) [![PyPI version](https://img.shields.io/pypi/v/gpt-clip.svg)](https://pypi.org/project/gpt-clip)
 
 `gpt-clip` is a lightweight command-line tool that sends clipboard content to the OpenAI Chat API and copies the response back to the clipboard.
 
@@ -22,9 +22,20 @@
 
 ## Installation
 
-Clone the repository and install locally:
+### From PyPI
+
+Install the latest release directly from PyPI:
+
 ```bash
-git clone https://github.com/<username>/ReviseClipBoard.git
+pip install --upgrade gpt-clip
+```
+
+### From source
+
+Clone the repository and install locally:
+
+```bash
+git clone https://github.com/chenle02/ReviseClipBoard.git
 cd ReviseClipBoard
 pip install .
 ```
