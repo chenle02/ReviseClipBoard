@@ -2,11 +2,11 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](#license)
 
-`gpt-clip` is a lightweight command-line tool that sends your clipboard contents to the OpenAI Chat API and copies the response back to the clipboard.
+`gpt-clip` is a lightweight command-line tool that sends clipboard content to the OpenAI Chat API and copies the response back to the clipboard.
 
 ## Features
 
-- Single-command chat via clipboard
+- Single-command chat via clipboard content
 - Configurable system prompt & model via JSON
 - Clipboard-agnostic: uses `pyperclip` (supports xclip, pbcopy, etc.)
 - Supports Python 3.7 and above
@@ -86,12 +86,12 @@ Ensure your OpenAI API key is set:
 export OPENAI_API_KEY="<your_api_key>"
 ```
 
-Copy text to your clipboard and run:
+Copy text to the clipboard and run:
 ```bash
 gpt-clip
 ```
 
-The response from ChatGPT will be copied back to your clipboard.
+The response from ChatGPT will be copied back to the clipboard.
 
 ## Contributing
 
