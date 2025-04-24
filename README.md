@@ -28,12 +28,34 @@ git clone https://github.com/<username>/ReviseClipBoard.git
 cd ReviseClipBoard
 pip install .
 ```
+## Contributing
+
+Contributions are welcome! Please open issues or pull requests on GitHub.
+
+## Author
+
+Le Chen
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 For development mode (editable install):
 ```bash
 pip install -e .
 ```
 
+## Contributing
+
+Contributions are welcome! Please open issues or pull requests on GitHub.
+
+## Author
+
+Le Chen
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 ### Installing via pipx
 
 If you'd like to install `gpt-clip` in an isolated environment using pipx, note that the CLI has been tested with OpenAI client `openai==0.27.7`. To pin the compatible OpenAI version and ensure all dependencies (including `pyperclip`) are installed, follow these steps:
@@ -93,19 +115,8 @@ gpt-clip
 
 The response from ChatGPT will be copied back to the clipboard.
 
-## Contributing
 
-Contributions are welcome! Please open issues or pull requests on GitHub.
-
-## Author
-
-Le Chen
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Tips & Integrations
+## Integrations
 
 ### Awesome WM Keybinding
 
