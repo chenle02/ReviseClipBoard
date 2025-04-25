@@ -8,7 +8,7 @@ with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='gpt-clip',
-    version='0.2.1',
+    version='0.2.2',
     description='Send clipboard content to OpenAI Chat API and copy response back to clipboard.',
     long_description=long_description,
     long_description_content_type='text/markdown',

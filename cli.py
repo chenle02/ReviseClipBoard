@@ -91,7 +91,7 @@ def load_config(path=CONFIG_PATH):
         sys.exit(1)
 
 
-VERSION = '0.2.1'
+VERSION = '0.2.2'
 
 def parse_args():
     parser = argparse.ArgumentParser(
