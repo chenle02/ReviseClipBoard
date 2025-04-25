@@ -43,6 +43,7 @@ Configuration file format:
 import os
 import sys
 import json
+import argparse
 import logging
 from logging.handlers import TimedRotatingFileHandler
 
@@ -90,6 +91,32 @@ def load_config(path=CONFIG_PATH):
         sys.exit(1)
 
 
+VERSION = '0.2.1'
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description='Send clipboard content to OpenAI Chat API and copy response back to clipboard.'
+    )
+    parser.add_argument(
+        '-c', '--config',
+        default=CONFIG_PATH,
+        help=f'Path to config JSON file (default: {CONFIG_PATH})'
+    )
+    parser.add_argument(
+        '-v', '--version',
+        action='version',
+        version=f'%(prog)s {VERSION}'
+    )
+    parser.add_argument(
+        '--model',
+        help='Override the model specified in the config file'
+    )
+    parser.add_argument(
+        '--prompt',
+        help='Override the system prompt specified in the config file'
+    )
+    return parser.parse_args()
+
 def main():
     """
     Main function that orchestrates the clipboard-to-ChatGPT workflow.
@@ -104,11 +131,20 @@ def main():
     Raises:
         SystemExit: On various error conditions (empty clipboard, API errors, etc.)
     """
+    # Parse arguments
+    args = parse_args()
+
     # Load config
-    config = load_config()
+    config = load_config(args.config)
+    # Override config values if provided
+    if args.model:
+        config['model'] = args.model
+    if args.prompt:
+        config['system_prompt'] = args.prompt
 
     # Setup markdown logging
-    log_dir = os.path.dirname(CONFIG_PATH)
+    config_path = os.path.abspath(args.config)
+    log_dir = os.path.dirname(config_path)
     os.makedirs(log_dir, exist_ok=True)
     log_path = os.path.join(log_dir, 'gpt-clip.md')
     logger = logging.getLogger('gpt_clip')

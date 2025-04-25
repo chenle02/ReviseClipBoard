@@ -100,7 +100,16 @@ export OPENAI_API_KEY="<your_api_key>"
 
 Copy text to the clipboard and run:
 ```bash
-gpt-clip
+gpt-clip [options]
+```
+
+Options:
+```bash
+  -c, --config PATH       Path to config JSON file (default: ~/.config/gpt-clip/config.json)
+      --model MODEL        Override the model specified in the config file
+      --prompt PROMPT      Override the system prompt specified in the config file
+  -v, --version            Show program version and exit
+  -h, --help               Show this help message and exit
 ```
 
 The response from ChatGPT will be copied back to the clipboard.
