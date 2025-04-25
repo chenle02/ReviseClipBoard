@@ -47,18 +47,6 @@ import argparse
 import logging
 from logging.handlers import TimedRotatingFileHandler
 
-try:
-    import pyperclip
-except ImportError:
-    print("Missing dependency: pyperclip. Install with 'pip install pyperclip'", file=sys.stderr)
-    sys.exit(1)
-
-try:
-    import openai
-except ImportError:
-    print("Missing dependency: openai. Install with 'pip install openai'", file=sys.stderr)
-    sys.exit(1)
-
 # XDG Base Directory for configuration
 CONFIG_DIR = os.environ.get(
     'XDG_CONFIG_HOME',
@@ -133,6 +121,18 @@ def main():
     """
     # Parse arguments
     args = parse_args()
+
+    # Import optional dependencies after parsing to allow --help/--version without errors
+    try:
+        import pyperclip
+    except ImportError:
+        print("Missing dependency: pyperclip. Install with 'pip install pyperclip'", file=sys.stderr)
+        sys.exit(1)
+    try:
+        import openai
+    except ImportError:
+        print("Missing dependency: openai. Install with 'pip install openai'", file=sys.stderr)
+        sys.exit(1)
 
     # Load config
     config = load_config(args.config)
