@@ -10,6 +10,7 @@
 - Configurable system prompt & model via JSON
 - Clipboard-agnostic: uses `pyperclip` (supports xclip, pbcopy, etc.)
 - Supports Python 3.7 and above
+  - Logs each session to a daily Markdown file (`gpt-clip.md`) in your config directory with 30-day rotation, capturing prompts, inputs, replies, model, and token usage.
 
 ## Prerequisites
 
@@ -103,6 +104,19 @@ gpt-clip
 ```
 
 The response from ChatGPT will be copied back to the clipboard.
+
+## Logging
+
+gpt-clip automatically maintains a Markdown log file at `$XDG_CONFIG_HOME/gpt-clip/gpt-clip.md` (default `~/.config/gpt-clip/gpt-clip.md`). Each entry includes:
+- **Timestamp**
+- **System Prompt**
+- **User Input**
+- **Reply**
+- **Model Name**
+- **Token Usage** (prompt_tokens, completion_tokens, total_tokens)
+- **Response ID**
+
+The log rotates daily and retains the last 30 days of entries via timed rotation.
 
 ## Integrations
 

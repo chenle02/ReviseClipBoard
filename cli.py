@@ -43,6 +43,8 @@ Configuration file format:
 import os
 import sys
 import json
+import logging
+from logging.handlers import TimedRotatingFileHandler
 
 try:
     import pyperclip
@@ -105,6 +107,27 @@ def main():
     # Load config
     config = load_config()
 
+    # Setup markdown logging
+    log_dir = os.path.dirname(CONFIG_PATH)
+    os.makedirs(log_dir, exist_ok=True)
+    log_path = os.path.join(log_dir, 'gpt-clip.md')
+    logger = logging.getLogger('gpt_clip')
+    logger.setLevel(logging.INFO)
+    handler = TimedRotatingFileHandler(log_path, when='D', interval=1, backupCount=30)
+    md_format = (
+        "## %(asctime)s\n\n"
+        "**System Prompt:**\n%(system_prompt)s\n\n"
+        "**User Input:**\n```\n%(user_input)s\n```\n\n"
+        "**Reply:**\n```\n%(reply)s\n```\n\n"
+        "- **Model:** %(model)s\n"
+        "- **Usage:** prompt_tokens: %(usage_prompt_tokens)s, completion_tokens: %(usage_completion_tokens)s, total_tokens: %(usage_total_tokens)s\n"
+        "- **Response ID:** %(response_id)s\n"
+        "\n---\n"
+    )
+    formatter = logging.Formatter(md_format, datefmt="%Y-%m-%d %H:%M:%S")
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
     # Set API key and initialize OpenAI client (new or legacy)
     api_key = os.getenv('OPENAI_API_KEY')
     if not api_key:
@@ -163,6 +186,35 @@ def main():
     pyperclip.copy(reply)
     print(reply)
     print("Response copied to clipboard.")
+
+    # Log the interaction in markdown
+    try:
+        usage_raw = getattr(response, 'usage', None)
+        if usage_raw is None and isinstance(response, dict):
+            usage_raw = response.get('usage')
+        usage = dict(usage_raw) if usage_raw else {}
+    except Exception:
+        usage = {}
+    try:
+        response_id = getattr(response, 'id', None)
+        if response_id is None and isinstance(response, dict):
+            response_id = response.get('id')
+    except Exception:
+        response_id = ''
+    prompt_tokens = usage.get('prompt_tokens', '')
+    completion_tokens = usage.get('completion_tokens', '')
+    total_tokens = usage.get('total_tokens', '')
+    log_extra = {
+        'system_prompt': system_prompt,
+        'user_input': clipboard_text,
+        'reply': reply,
+        'model': model,
+        'usage_prompt_tokens': prompt_tokens,
+        'usage_completion_tokens': completion_tokens,
+        'usage_total_tokens': total_tokens,
+        'response_id': response_id or '',
+    }
+    logger.info('', extra=log_extra)
 
 
 if __name__ == '__main__':
