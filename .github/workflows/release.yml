@@ -1,4 +1,8 @@
 name: Release to PyPI and GitHub
+# Grant workflow permissions to create GitHub releases and upload packages
+permissions:
+  contents: write
+  packages: write
 
 on:
   # Trigger on version tag pushes (e.g. v0.2.0) or manual dispatch
