@@ -7,10 +7,20 @@
 ## Features
 
 - Single-command chat via clipboard content
-- Configurable system prompt & model via JSON
+- Flexible configuration system with multiple sources:
+  - Command line arguments (highest priority)
+  - Environment variables
+  - Configuration file
+  - Default values (lowest priority)
+- Configurable parameters:
+  - System prompt
+  - Model selection
+  - Temperature control
+  - Logging options
 - Clipboard-agnostic: uses `pyperclip` (supports xclip, pbcopy, etc.)
 - Supports Python 3.7 and above
-  - Logs each session to a daily Markdown file (`gpt-clip.md`) in your config directory with 30-day rotation, capturing prompts, inputs, replies, model, and token usage.
+- Logs each session to a daily Markdown file (`gpt-clip.md`) in your config directory with configurable retention period
+- Type-safe configuration with validation
 
 ## Prerequisites
 
@@ -78,18 +88,48 @@ This setup creates an isolated virtual environment for `gpt-clip`, installs its 
 
 ## Configuration
 
+Configuration can be set through multiple sources, with the following priority order:
+
+1. Command line arguments
+2. Environment variables
+3. Configuration file
+4. Default values
+
+### Configuration File
+
 1. Copy the example configuration to your config directory:
    ```bash
    mkdir -p ~/.config/gpt-clip
    cp config.json.example ~/.config/gpt-clip/config.json
    ```
-2. Edit `~/.config/gpt-clip/config.json` to set your system prompt and model. For example, to revise emails professionally:
+2. Edit `~/.config/gpt-clip/config.json` to set your preferences:
    ```json
    {
      "system_prompt": "You are a helpful and professional assistant. Your task is to revise the user's email, improving clarity, tone, and grammar. The email may include a reply history; please take that into account to ensure the response is appropriate in tone, content, and context.",
-     "model": "gpt-4.1"
+     "model": "gpt-4",
+     "temperature": 0.7,
+     "log_enabled": true,
+     "log_retention_days": 30,
+     "log_format": "markdown"
    }
    ```
+
+### Environment Variables
+
+You can also configure `gpt-clip` using environment variables. Create a `.env` file in your project directory or set them in your shell:
+
+```bash
+# Required
+OPENAI_API_KEY=your-api-key-here
+
+# Optional configuration
+GPTCLIP_SYSTEM_PROMPT="You are a helpful assistant."
+GPTCLIP_MODEL=gpt-3.5-turbo
+GPTCLIP_TEMPERATURE=0.7  # Lower values (0.7) for more focused outputs, higher values (1.0) for more creative responses
+GPTCLIP_LOG_ENABLED=true
+GPTCLIP_LOG_RETENTION_DAYS=30
+GPTCLIP_LOG_FORMAT=markdown
+```
 
 ## Usage
 
@@ -106,26 +146,29 @@ gpt-clip [options]
 Options:
 ```bash
   -c, --config PATH       Path to config JSON file (default: ~/.config/gpt-clip/config.json)
-      --model MODEL        Override the model specified in the config file
-      --prompt PROMPT      Override the system prompt specified in the config file
-  -v, --version            Show program version and exit
-  -h, --help               Show this help message and exit
+      --model MODEL       Override the model specified in the config file
+      --prompt PROMPT     Override the system prompt specified in the config file
+      --temperature TEMP  Override the temperature (0.0-2.0)
+      --no-log           Disable logging for this run
+  -v, --version          Show program version and exit
+  -h, --help             Show this help message and exit
 ```
 
 The response from ChatGPT will be copied back to the clipboard.
 
 ## Logging
 
-gpt-clip automatically maintains a Markdown log file at `$XDG_CONFIG_HOME/gpt-clip/gpt-clip.md` (default `~/.config/gpt-clip/gpt-clip.md`). Each entry includes:
+gpt-clip automatically maintains a log file at `$XDG_CONFIG_HOME/gpt-clip/gpt-clip.md` (default `~/.config/gpt-clip/gpt-clip.md`). Each entry includes:
 - **Timestamp**
 - **System Prompt**
 - **User Input**
 - **Reply**
 - **Model Name**
+- **Temperature**
 - **Token Usage** (prompt_tokens, completion_tokens, total_tokens)
 - **Response ID**
 
-The log rotates daily and retains the last 30 days of entries via timed rotation.
+The log rotates daily and retains entries for the configured number of days (default: 30).
 
 ## Integrations
 
@@ -160,6 +203,15 @@ If you're on Wayland with `wl-clipboard`, replace `xclip -o -selection clipboard
 
 ## Troubleshooting
 
+### Configuration Issues
+
+If you encounter configuration-related issues:
+
+1. Check if your configuration file is valid JSON
+2. Verify environment variables are set correctly
+3. Try running with `--no-log` to disable logging
+4. Check the error messages for specific validation errors
+
 ### Compatibility with older OpenAI clients
 
 `gpt-clip` auto-detects your OpenAI SDK version:
@@ -193,4 +245,3 @@ Le Chen
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-</augment_code_snippet>
