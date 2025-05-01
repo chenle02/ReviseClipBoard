@@ -44,45 +44,39 @@ Configuration can be set via:
 """
 import os
 import sys
-import json
-import argparse
 import logging
+import argparse
 from logging.handlers import TimedRotatingFileHandler
-from config import GPTClipConfig, CONFIG_PATH
 
-VERSION = '0.2.3'
+from config import GPTClipConfig
 
 def parse_args():
+    """Parse command line arguments."""
     parser = argparse.ArgumentParser(
-        description='Send clipboard content to OpenAI Chat API and copy response back to clipboard.'
+        description="Copy text from clipboard, send to OpenAI's Chat API, and copy response back."
     )
     parser.add_argument(
-        '-c', '--config',
-        default=CONFIG_PATH,
-        help=f'Path to config JSON file (default: {CONFIG_PATH})'
+        "--config",
+        default=os.path.expanduser("~/.config/gpt-clip/config.json"),
+        help="Path to configuration file"
     )
     parser.add_argument(
-        '-v', '--version',
-        action='version',
-        version=f'%(prog)s {VERSION}'
+        "--model",
+        help="OpenAI model to use (overrides config)"
     )
     parser.add_argument(
-        '--model',
-        help='Override the model specified in the config file'
+        "--prompt",
+        help="System prompt (overrides config)"
     )
     parser.add_argument(
-        '--prompt',
-        help='Override the system prompt specified in the config file'
-    )
-    parser.add_argument(
-        '--temperature',
+        "--temperature",
         type=float,
-        help='Override the temperature (0.0-2.0)'
+        help="Temperature for response generation (overrides config)"
     )
     parser.add_argument(
-        '--no-log',
-        action='store_true',
-        help='Disable logging for this run'
+        "--no-log",
+        action="store_true",
+        help="Disable logging"
     )
     return parser.parse_args()
 
@@ -166,15 +160,9 @@ def main():
     if not api_key:
         print("Error: OPENAI_API_KEY environment variable not set.", file=sys.stderr)
         sys.exit(1)
-    # New OpenAI client (v0.27+) uses OpenAI() class
-    # Fallback to legacy top-level API if unavailable
-    if hasattr(openai, 'OpenAI'):
-        client = openai.OpenAI(api_key=api_key)
-        use_legacy = False
-    else:
-        openai.api_key = api_key
-        client = openai
-        use_legacy = True
+
+    # Initialize OpenAI client
+    client = openai.OpenAI(api_key=api_key)
 
     # Read from clipboard
     clipboard_text = pyperclip.paste()
@@ -190,67 +178,39 @@ def main():
 
     # Call OpenAI API
     try:
-        if use_legacy:
-            # Legacy ChatCompletion API
-            response = client.ChatCompletion.create(
-                model=config.model,
-                messages=messages,
-                temperature=config.temperature
-            )
-        else:
-            # New client interface
-            response = client.chat.completions.create(
-                model=config.model,
-                messages=messages,
-                temperature=config.temperature
-            )
+        response = client.chat.completions.create(
+            model=config.model,
+            messages=messages,
+            temperature=config.temperature
+        )
     except Exception as e:
         print(f"OpenAI API request failed: {e}", file=sys.stderr)
         sys.exit(1)
 
     # Extract and copy response
     try:
-        # Both legacy and new client use same response structure
         reply = response.choices[0].message.content
-    except (AttributeError, IndexError) as e:
-        print(f"Unexpected API response format: {e}", file=sys.stderr)
+        pyperclip.copy(reply)
+
+        # Log if enabled
+        if config.log_enabled:
+            logger.info(
+                "",
+                extra={
+                    'system_prompt': config.system_prompt,
+                    'user_input': clipboard_text,
+                    'reply': reply,
+                    'model': config.model,
+                    'temperature': config.temperature,
+                    'usage_prompt_tokens': response.usage.prompt_tokens,
+                    'usage_completion_tokens': response.usage.completion_tokens,
+                    'usage_total_tokens': response.usage.total_tokens,
+                    'response_id': response.id
+                }
+            )
+    except Exception as e:
+        print(f"Error processing response: {e}", file=sys.stderr)
         sys.exit(1)
-
-    pyperclip.copy(reply)
-    print(reply)
-    print("Response copied to clipboard.")
-
-    # Log the interaction in markdown
-    if config.log_enabled:
-        try:
-            usage_raw = getattr(response, 'usage', None)
-            if usage_raw is None and isinstance(response, dict):
-                usage_raw = response.get('usage')
-            usage = dict(usage_raw) if usage_raw else {}
-        except Exception:
-            usage = {}
-        try:
-            response_id = getattr(response, 'id', None)
-            if response_id is None and isinstance(response, dict):
-                response_id = response.get('id')
-        except Exception:
-            response_id = ''
-        prompt_tokens = usage.get('prompt_tokens', '')
-        completion_tokens = usage.get('completion_tokens', '')
-        total_tokens = usage.get('total_tokens', '')
-        log_extra = {
-            'system_prompt': config.system_prompt,
-            'user_input': clipboard_text,
-            'reply': reply,
-            'model': config.model,
-            'temperature': config.temperature,
-            'usage_prompt_tokens': prompt_tokens,
-            'usage_completion_tokens': completion_tokens,
-            'usage_total_tokens': total_tokens,
-            'response_id': response_id or '',
-        }
-        logger.info('', extra=log_extra)
-
 
 if __name__ == '__main__':
     main()
