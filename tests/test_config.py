@@ -6,10 +6,11 @@ import json
 import pytest
 from pathlib import Path
 from config import GPTClipConfig
+from unittest.mock import patch
 
 @pytest.fixture
 def temp_config_dir(tmp_path):
-    """Create a temporary configuration directory."""
+    """Create a temporary config directory."""
     config_dir = tmp_path / "config"
     config_dir.mkdir()
     return config_dir
@@ -33,7 +34,7 @@ def temp_config_file(temp_config_dir):
 def test_default_config():
     """Test default configuration values."""
     config = GPTClipConfig()
-    assert config.system_prompt == "You are a helpful assistant."
+    assert config.system_prompt == "You are a helpful assistant that improves text. Fix any spelling, grammar, or punctuation errors. Make the text more concise and clear while preserving its meaning."
     assert config.model == "gpt-3.5-turbo"
     assert config.temperature == 0.7
     assert config.log_enabled is True
@@ -60,56 +61,70 @@ def test_config_validation():
     # Test invalid log retention days
     with pytest.raises(ValueError) as exc_info:
         GPTClipConfig(log_retention_days=0)
-    assert "Log retention days must be at least 1" in str(exc_info.value)
+    assert "Input should be greater than or equal to 1" in str(exc_info.value)
 
-def test_load_config_from_file(temp_config_file):
+def test_load_config_from_file(temp_config_dir):
     """Test loading configuration from file."""
-    config = GPTClipConfig.load_config(temp_config_file)
-    assert config.system_prompt == "test prompt"
-    assert config.model == "gpt-3.5-turbo"
-    assert config.temperature == 0.7
-    assert config.log_enabled is True
-    assert config.log_retention_days == 30
-    assert config.log_format == "markdown"
+    config_file = temp_config_dir / "config.json"
+    config_data = {
+        "system_prompt": "Custom prompt",
+        "model": "gpt-4",
+        "temperature": 0.5,
+        "log_enabled": False,
+        "log_retention_days": 15,
+        "log_format": "json"
+    }
+    with open(config_file, "w") as f:
+        json.dump(config_data, f)
+
+    config = GPTClipConfig.load_config(config_file)
+    assert config.system_prompt == "Custom prompt"
+    assert config.model == "gpt-4"
+    assert config.temperature == 0.5
+    assert config.log_enabled is False
+    assert config.log_retention_days == 15
+    assert config.log_format == "json"
 
 def test_load_config_from_env():
     """Test loading configuration from environment variables."""
-    env_vars = {
-        "GPT_CLIP_SYSTEM_PROMPT": "env prompt",
-        "GPT_CLIP_MODEL": "gpt-3.5-turbo",
-        "GPT_CLIP_TEMPERATURE": "0.5",
-        "GPT_CLIP_LOG_ENABLED": "false",
-        "GPT_CLIP_LOG_RETENTION_DAYS": "7",
-        "GPT_CLIP_LOG_FORMAT": "json"
-    }
-    with pytest.MonkeyPatch.context() as mp:
-        for key, value in env_vars.items():
-            mp.setenv(key, value)
-        config = GPTClipConfig.load_config()
-        assert config.system_prompt == "env prompt"
-        assert config.model == "gpt-3.5-turbo"
+    with patch.dict(os.environ, {
+        "GPTCLIP_SYSTEM_PROMPT": "Env prompt",
+        "GPTCLIP_MODEL": "gpt-4",
+        "GPTCLIP_TEMPERATURE": "0.5",
+        "GPTCLIP_LOG_ENABLED": "false",
+        "GPTCLIP_LOG_RETENTION_DAYS": "15",
+        "GPTCLIP_LOG_FORMAT": "json"
+    }):
+        config = GPTClipConfig()
+        assert config.system_prompt == "Env prompt"
+        assert config.model == "gpt-4"
         assert config.temperature == 0.5
         assert config.log_enabled is False
-        assert config.log_retention_days == 7
+        assert config.log_retention_days == 15
         assert config.log_format == "json"
 
 def test_save_config(temp_config_dir):
     """Test saving configuration to file."""
-    config_file = temp_config_dir / "test_save.json"
+    config_file = temp_config_dir / "config.json"
     config = GPTClipConfig(
-        system_prompt="save test",
-        model="gpt-3.5-turbo",
-        temperature=0.5
+        system_prompt="Test prompt",
+        model="gpt-4",
+        temperature=0.5,
+        log_enabled=False,
+        log_retention_days=15,
+        log_format="json"
     )
     config.save_config(config_file)
 
-    # Verify file exists and content is correct
     assert config_file.exists()
     with open(config_file) as f:
         saved_data = json.load(f)
-    assert saved_data["system_prompt"] == "save test"
-    assert saved_data["model"] == "gpt-3.5-turbo"
+    assert saved_data["system_prompt"] == "Test prompt"
+    assert saved_data["model"] == "gpt-4"
     assert saved_data["temperature"] == 0.5
+    assert saved_data["log_enabled"] is False
+    assert saved_data["log_retention_days"] == 15
+    assert saved_data["log_format"] == "json"
 
 def test_create_default_config(temp_config_dir):
     """Test creating default configuration file."""
@@ -120,27 +135,33 @@ def test_create_default_config(temp_config_dir):
     assert config_file.exists()
     with open(config_file) as f:
         saved_data = json.load(f)
-    assert saved_data["system_prompt"] == "You are a helpful assistant."
+    assert saved_data["system_prompt"] == "You are a helpful assistant that improves text. Fix any spelling, grammar, or punctuation errors. Make the text more concise and clear while preserving its meaning."
     assert saved_data["model"] == "gpt-3.5-turbo"
     assert saved_data["temperature"] == 0.7
+    assert saved_data["log_enabled"] is True
+    assert saved_data["log_retention_days"] == 30
+    assert saved_data["log_format"] == "markdown"
 
 def test_config_file_not_found(temp_config_dir):
     """Test handling of missing configuration file."""
     config_file = temp_config_dir / "nonexistent.json"
     config = GPTClipConfig.load_config(config_file)
-    assert config.system_prompt == "You are a helpful assistant."
+    assert config.system_prompt == "You are a helpful assistant that improves text. Fix any spelling, grammar, or punctuation errors. Make the text more concise and clear while preserving its meaning."
     assert config.model == "gpt-3.5-turbo"
     assert config.temperature == 0.7
+    assert config.log_enabled is True
+    assert config.log_retention_days == 30
+    assert config.log_format == "markdown"
 
-def test_config_file_permission_error(temp_config_file):
-    """Test handling of permission errors."""
-    # Make file read-only
-    os.chmod(temp_config_file, 0o444)
+def test_config_file_permission_error(temp_config_dir):
+    """Test handling of permission error when reading configuration file."""
+    config_file = temp_config_dir / "config.json"
+    with open(config_file, "w") as f:
+        f.write('{"test": "data"}')
+    os.chmod(config_file, 0o444)
 
-    # Try to save to read-only file
-    config = GPTClipConfig()
-    config.save_config(temp_config_file)
-    assert temp_config_file.exists()
+    with pytest.raises(PermissionError):
+        GPTClipConfig.load_config(config_file)
 
 def test_config_file_corrupted(temp_config_dir):
     """Test handling of corrupted configuration file."""
@@ -149,43 +170,62 @@ def test_config_file_corrupted(temp_config_dir):
         f.write('{"invalid": "data"}')
 
     config = GPTClipConfig.load_config(config_file)
-    assert config.system_prompt == "You are a helpful assistant."
+    assert config.system_prompt == "You are a helpful assistant that improves text. Fix any spelling, grammar, or punctuation errors. Make the text more concise and clear while preserving its meaning."
     assert config.model == "gpt-3.5-turbo"
     assert config.temperature == 0.7
+    assert config.log_enabled is True
+    assert config.log_retention_days == 30
+    assert config.log_format == "markdown"
 
 def test_config_file_backup(temp_config_dir):
     """Test configuration file backup."""
-    config_file = temp_config_dir / "backup_test.json"
-    
-    # Create initial config
-    config = GPTClipConfig(system_prompt="initial")
-    config.save_config(config_file)
-    
-    # Update config
-    config.system_prompt = "updated"
-    config.save_config(config_file)
-    
-    # Verify backup exists
-    backup_file = config_file.with_suffix(".json.bak")
+    config_file = temp_config_dir / "config.json"
+    backup_file = temp_config_dir / "config.json.bak"
+    config_data = {
+        "system_prompt": "Test prompt",
+        "model": "gpt-4",
+        "temperature": 0.5,
+        "log_enabled": False,
+        "log_retention_days": 15,
+        "log_format": "json"
+    }
+    with open(config_file, "w") as f:
+        json.dump(config_data, f)
+
+    # Create backup
+    GPTClipConfig.create_backup(config_file)
+
     assert backup_file.exists()
     with open(backup_file) as f:
         backup_data = json.load(f)
-    assert backup_data["system_prompt"] == "initial"
+    assert backup_data == config_data
 
 def test_config_file_encryption(temp_config_dir):
     """Test configuration file encryption."""
-    config_file = temp_config_dir / "encrypted.json"
-    config = GPTClipConfig(
-        system_prompt="secret prompt",
-        model="gpt-3.5-turbo",
-        temperature=0.7
-    )
+    config_file = temp_config_dir / "config.json"
+    config_data = {
+        "system_prompt": "Test prompt",
+        "model": "gpt-4",
+        "temperature": 0.5,
+        "log_enabled": False,
+        "log_retention_days": 15,
+        "log_format": "json"
+    }
+    with open(config_file, "w") as f:
+        json.dump(config_data, f)
 
-    # Save config without encryption
-    config.save_config(config_file, encrypt=False)
+    # Encrypt file
+    GPTClipConfig.encrypt_config(config_file)
 
-    # Verify file exists and is not encrypted
-    assert config_file.exists()
+    # Verify file is encrypted
     with open(config_file, "rb") as f:
         content = f.read()
-    assert content.startswith(b"{")  # Plain JSON 
+    assert content != json.dumps(config_data).encode()
+
+    # Decrypt file
+    GPTClipConfig.decrypt_config(config_file)
+
+    # Verify file is decrypted
+    with open(config_file) as f:
+        decrypted_data = json.load(f)
+    assert decrypted_data == config_data 
